@@ -1,6 +1,0 @@
-[17-May-2011 13:36:05] PHP Parse error:  syntax error, unexpected T_VARIABLE in /home/dwestern/public_html/bf_staging/MMS/Php/ReceiveMMS/index.php on line 12
-[17-May-2011 13:38:21] PHP Parse error:  syntax error, unexpected T_VARIABLE, expecting ',' or ';' in /home/dwestern/public_html/bf_staging/MMS/Php/ReceiveMMS/index.php on line 15
-[17-May-2011 13:40:02] PHP Warning:  opendir($attachment_dir/) [<a href='function.opendir'>function.opendir</a>]: failed to open dir: No such file or directory in /home/dwestern/public_html/bf_staging/MMS/Php/ReceiveMMS/index.php on line 13
-[17-May-2011 13:40:02] PHP Warning:  readdir(): supplied argument is not a valid Directory resource in /home/dwestern/public_html/bf_staging/MMS/Php/ReceiveMMS/index.php on line 14
-[17-May-2011 13:41:18] PHP Warning:  opendir($attachment_dir/) [<a href='function.opendir'>function.opendir</a>]: failed to open dir: No such file or directory in /home/dwestern/public_html/bf_staging/MMS/Php/ReceiveMMS/index.php on line 16
-[17-May-2011 13:41:18] PHP Warning:  readdir(): supplied argument is not a valid Directory resource in /home/dwestern/public_html/bf_staging/MMS/Php/ReceiveMMS/index.php on line 17
