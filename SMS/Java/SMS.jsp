@@ -1,7 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML lang=en xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><HEAD><TITLE>Application 1</TITLE>
+<META content="text/html; charset=windows-1252" http-equiv=Content-Type>
+<SCRIPT type=text/javascript 
+src="http://www.dwestern.com/smsapp/smshelper.js">
+</SCRIPT>
+<META name=GENERATOR content="MSHTML 8.00.6001.19046"></HEAD>
+<BODY>
+<TABLE border=0 width="100%">
+  <TBODY>
+  <TR>
+    <TD rowSpan=2 width="25%" align=left><IMG 
+      src="http://developer.att.com/developer/images/att.gif"></TD>
+    <TD width="15%" align=right>Server Time:</TD>
+    <TD width="60%" align=left>Monday, June 13, 2011 16:52 CDT</TD></TR>
+  <TR>
+    <TD width="15%" align=right>Client Time:</TD>
+    <TD width="25%" align=left>
+      <SCRIPT language=JavaScript type=text/javascript>
+<!--
+var myDate = new Date();
+document.write(myDate.format('l, F d, Y  H:i') + ' PDT');
+
+//-->
+</SCRIPT>
+</TD></TR></TBODY></TABLE>
 <%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
 <%@ page import="org.apache.commons.httpclient.*"%>
 <%@ page import="org.apache.commons.httpclient.methods.*"%>
 <%@ page import="org.json.JSONObject"%>
+<%@ page import="org.json.JSONArray"%>
 <%@ page import="org.w3c.dom.*" %>
 <%@ page import="javax.xml.parsers.*" %>
 <%@ page import="javax.xml.transform.*" %>
@@ -14,15 +41,14 @@
 	if(accessToken==null || accessToken=="null") {
 		accessToken = "";
 		session.setAttribute("postOauth", "SMS.jsp");
-		%><a href="oauth.jsp">Authenticate first</a><br><br><%
+		session.setAttribute("redirectUri", "http://apigee.dyndns.org:8080/apigee-public/oauth.jsp");
+		response.sendRedirect("oauth.jsp?getExtCode=yes");
 	}
 	String address = request.getParameter("address");
 	String message = request.getParameter("message");
 	String smsId = request.getParameter("smsId");
 	if (smsId==null) smsId = (String) session.getAttribute("smsId");
 	if (smsId==null) smsId = "";
-	String requestFormat = request.getParameter("requestFormat");
-	String responseFormat = request.getParameter("responseFormat");
 	String getSmsDeliveryStatus = request.getParameter("getSmsDeliveryStatus");
 	String sendSms = request.getParameter("sendSms");
 	String getReceivedSms = request.getParameter("getReceivedSms");
@@ -32,132 +58,165 @@
 	if(registrationID==null || registrationID=="null"){
 		registrationID = "";}
 	String print = "";
-%> <br>
+%>
+    
+<HR size=px"></HR>
+<font size=4px"><B>ATT sample SMS application</B></font><BR>
+Feature 1 - sending SMS message.<BR>
+<FORM  method="post" name="sendSms" >
+<TABLE border=0 width="60%">
+  <TBODY>
+  <TR>
+    <TD width="10%">Message:</TD>
+    <TD><TEXTAREA rows=4 name="message">simple message to myself</TEXTAREA>
+	</TD></TR>
+  <TR>
+    <TD width="10%">Phone:</TD>
+    <TD><input maxLength=12 size=12 name="address" value="425-241-8899"></input>
+    </TD>
+  </TR>
+  <TR>
+    <TD width="10%">&nbsp;</TD>
+    <TD>DDD-DDD-DDDD</TD></TR></TBODY></TABLE>
+<BUTTON type="submit" name="sendSms">send sms message</BUTTON>
+</FORM>
+<%
 
-
-<form name="sendSms" method="post">
-	Access Token <input type="text" name="access_token" value="<%=accessToken%>" size=40/><br>
-	MSISDN <input type="text" name="address" value="tel:" /><br />
-	Message <input type="text" name="message" value="Test." size=40/><br />
-	Request Format: <input type="radio" name="requestFormat" value="xml">XML<input type="radio" name="requestFormat" value="json" checked>JSON<input type="radio" name="requestFormat" value="form-encoded">Form-encoded<br/>
-	Response Format: <input type="radio" name="responseFormat" value="xml">XML<input type="radio" name="responseFormat" value="json" checked>JSON<br/>
-	<input type="submit" name="sendSms" value="Send SMS"/>
-</form><br>
-
-   <%   
-       if(sendSms!=null) {
-           String url ="https://beta-api.att.com/1/messages/outbox/sms";   
-           HttpClient client = new HttpClient();
-           PostMethod method = new PostMethod(url);  
-           
-if(requestFormat.equalsIgnoreCase("xml")){       
-         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-         DocumentBuilder builder = factory.newDocumentBuilder();
-         DOMImplementation impl = builder.getDOMImplementation();
-         Document doc = impl.createDocument(null,null,null);
-         Element e1 = doc.createElement("sms-request");
-         doc.appendChild(e1);
-         Element e2 = doc.createElement("address");
-         e1.appendChild(e2);
-         e2.setTextContent(address);
-         Element e3 = doc.createElement("message");
-         e1.appendChild(e3);
-         e3.setTextContent(message);
-         // transform the Document into a String
-         DOMSource domSource = new DOMSource(doc);
-         TransformerFactory tf = TransformerFactory.newInstance();
-         Transformer transformer = tf.newTransformer();
-         transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-         transformer.setOutputProperty(OutputKeys.ENCODING,"UTF-8");
-         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-         transformer.setOutputProperty(OutputKeys.STANDALONE,"yes");
-         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-         java.io.StringWriter sw = new java.io.StringWriter();
-         StreamResult sr = new StreamResult(sw);
-         transformer.transform(domSource, sr);
-         String xml = sw.toString();
-         System.out.println(xml);
-         method.setRequestBody(xml);
-         method.addRequestHeader("Content-Type","application/xml");
-} else if(requestFormat.equalsIgnoreCase("json")) { 
-			JSONObject rpcObject = new JSONObject();
-   		 	rpcObject.put("message", message);
-   		 	rpcObject.put("address", address);
-   		 	method.setRequestBody(rpcObject.toString());
-   			method.addRequestHeader("Content-Type","application/json; charset=UTF-8");
-   			
-} else if(requestFormat.equalsIgnoreCase("form-encoded")){
-   			 NameValuePair nvp1= new NameValuePair("message",message);
-   			 NameValuePair nvp2= new NameValuePair("address",address);
-   			 method.addRequestHeader("Content-Type","application/x-www-form-urlencoded; charset=UTF-8");
-   		     method.setRequestBody(new NameValuePair[] {nvp1,nvp2});
+if(sendSms!=null) {
+	address = "tel:" + address.substring(0,3) + address.substring(4,7) + address.substring(8,12);
+	System.out.println("address is: " + address);
+    String url ="https://test-api.att.com/1/messages/outbox/sms";   
+    HttpClient client = new HttpClient();
+    PostMethod method = new PostMethod(url);
+    JSONObject rpcObject = new JSONObject();
+	rpcObject.put("message", message);
+	rpcObject.put("address", address);
+	method.setRequestBody(rpcObject.toString());
+	method.addRequestHeader("Content-Type","application/json; charset=UTF-8");
+	method.setQueryString("access_token=" + accessToken);
+    method.addRequestHeader("Accept","application/json");
+    int statusCode = client.executeMethod(method);
+    System.out.println(method.getResponseBodyAsString());
+    if(statusCode==201) {
+       	JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
+       	smsId = jsonResponse.getString("id");
+       	session.setAttribute("smsId",smsId);
+       	%>
+       	<table border="1" bgcolor="#CCFF33" >
+  		<tr><th>message id</th></tr>
+  		<tr><td><%=smsId%></td></tr>
+		</table>
+		<%
+    } else {
+    	%>
+       	<table border="1" bgcolor="#FF0000" >
+  		<tr><th>Error</th></tr>
+  		<tr><td><%=method.getResponseBodyAsString()%></td></tr>
+		</table>
+		<%
+    }
+    method.releaseConnection();
 }
-           method.setQueryString("access_token=" + accessToken);
-           method.addRequestHeader("Accept","application/" + responseFormat);
-           int statusCode = client.executeMethod(method); 
-           if(statusCode==201) {
-           	if(responseFormat.equalsIgnoreCase("json")) {
-           		JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
-           		smsId = jsonResponse.getString("id");
-           		session.setAttribute("smsId",smsId);
-           		print = method.getResponseBodyAsString();
-           	}
-           	else if(responseFormat.equalsIgnoreCase("xml")) {
-           		DocumentBuilderFactory factoryForResponse = DocumentBuilderFactory.newInstance();
-                DocumentBuilder builder = factoryForResponse.newDocumentBuilder();
-                print = method.getResponseBodyAsString();
-           	    Document xmlDoc = builder.parse(method.getResponseBodyAsStream());
-           	    smsId = xmlDoc.getDocumentElement().getAttribute("id");
-          	    session.setAttribute("smsId",smsId);
-           	}
-           } else {
-        	   print = method.getResponseBodyAsString();
-           }
-           
-           method.releaseConnection();
-       }
-   %>   
+%>
 
-<form name="getSmsDeliveryStatus" action="" method="get">
-	Request Identifier <input type="text" name="id" value="<%=smsId%>" size=40/><br />
-	Access Token <input type="text" name="access_token" value="<%=accessToken%>" size=40/><br>
-	Response Format: <input type="radio" name="responseFormat" value="xml">XML<input type="radio" name="responseFormat" value="json" checked>JSON<br/>
-	<input type="submit" name="getSmsDeliveryStatus" value="Get SMS Delivery Status" />
-</form><br><br>
+<HR></HR>
+Feature 2 - obtaining status on previously sent message.
+<FORM method="post" name="getSmsDeliveryStatus">
+    <TD>Message ID:</TD>
+    <TD><input type="text" name="smsId" value="<%=smsId%>"></input></TD>
+    <TD><BUTTON type="submit" name="getSmsDeliveryStatus">get status</BUTTON></TD>
+</FORM>
 
    <%  
        if(getSmsDeliveryStatus!=null) {
-           String url ="https://beta-api.att.com/1/messages/outbox/sms/" + smsId;   
+           String url ="https://test-api.att.com/1/messages/outbox/sms/" + smsId;   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);  
            method.setQueryString("access_token=" + accessToken + "&id=" + smsId);
-           method.addRequestHeader("Accept","application/" + responseFormat);
-           int statusCode = client.executeMethod(method);    
-           print = method.getResponseBodyAsString();
+           method.addRequestHeader("Accept","application/json");
+           int statusCode = client.executeMethod(method); 
+           System.out.println(method.getResponseBodyAsString());
+           if(statusCode==200) {
+              	JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
+              	JSONObject deliveryInfoList = new JSONObject(jsonResponse.getString("deliveryInfoList"));
+              	JSONArray deliveryInfoArray = new JSONArray(deliveryInfoList.getString("deliveryInfo"));
+              	JSONObject deliveryInfo = new JSONObject(deliveryInfoArray.getString(0));
+              	%>
+				<TABLE border="1" bgcolor="#CCFF33">
+   					<TR><TH>Status</th><th>Resource URL</TH></TR>
+   					<TR><TD><%=deliveryInfo.getString("delivery-status")%></td><td><%=deliveryInfoList.getString("resourceURL")%></TD><TR>
+				</TABLE>
+       		<%
+           } else {
+           	%>
+              	<table border="1" bgcolor="#FF0000" >
+         		<tr><th>Error</th></tr>
+         		<tr><td><%=method.getResponseBodyAsString()%></td></tr>
+       		</table>
+       		<%
+           }
            System.out.println(method.getResponseBodyAsString());
            method.releaseConnection();
        }
-   %>     
-
-<form name="getReceivedSms" action="" method="get">
-	Registration ID <input type="text" name="registrationID" value="<%=registrationID%>" size=40/><br />
-	Access Token <input type="text" name="access_token" value="<%=accessToken%>" size=40/><br>
-	Response Format: <input type="radio" name="responseFormat" value="xml">XML<input type="radio" name="responseFormat" value="json" checked>JSON<br/>
-	<input type="submit" name="getReceivedSms" value="Get Received Sms" />
-</form>
-
+   %> 
+   
+<HR></HR>
+Feature 3 - checking number messages sent to a short code.
+<FORM method="post" name="getReceivedSms">
+<TABLE>
+  <TR>
+    <TD>ShortCode:</TD>
+    <TD><input type="text" name="registrationID" value="22888955"></input></TD>
+    <TD><BUTTON type="submit" name="getReceivedSms" >get messages for shortcode</BUTTON></TD>
+  </TR>
+</TABLE>
+</FORM>
+  
    <%  
        if(getReceivedSms!=null) {
-           String url ="https://beta-api.att.com/1/messages/inbox/sms";   
+           String url ="https://test-api.att.com/1/messages/inbox/sms";   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);  
            method.setQueryString("access_token=" + accessToken + "&registrationID=" + registrationID);
-           method.addRequestHeader("Accept","application/" + responseFormat);
+           method.addRequestHeader("Accept","application/json");
            session.setAttribute("registrationID", registrationID);
-           int statusCode = client.executeMethod(method);    
-           print = method.getResponseBodyAsString();
+           int statusCode = client.executeMethod(method);
            System.out.println(method.getResponseBodyAsString());
+           if(statusCode==200) {
+              		JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
+              		JSONObject smsList = new JSONObject(jsonResponse.getString("inboundSMSMessageList"));
+              		int numberOfMessagesInBatch = Integer.parseInt(smsList.getString("numberOfMessagesInThisBatch"));
+              		int numberOfMessagesPending = Integer.parseInt(smsList.getString("totalNumberOfPendingMessages"));
+              		JSONArray messages = new JSONArray(smsList.getString("inboundSMSMessage"));
+              		if(numberOfMessagesInBatch!=0) {
+              		%>
+						<table border="1"  bgcolor="#CCFF33">
+    						<tr><td><b>Message Index</b></td><td><b>Message Text</b></td><td><b>Sender Address</b></td><tr>
+							<%for(int i=0;i<numberOfMessagesInBatch; i++) {
+							JSONObject msg = new JSONObject(messages.getString(i));%>
+    						<tr><td align="center"><%=msg.getString("messageId")%></td><td align="center"><%=msg.getString("message")%></td><td><%=msg.getString("senderAddress")%></td><tr>
+							<%}%>
+    						<tr><td></td><td><b>Number of messages in this batch:</b></td><td align="center"><%=numberOfMessagesInBatch%></td><tr>
+    						<tr><td></td><td><b>Number of remaining pending messages:</b></td><td align="center"><%=numberOfMessagesPending%></td><tr>
+						</table>
+              		<%
+              		} else {
+                       	%>
+                      	<table border="1" bgcolor="#FF0000" >
+                 		<tr><th>Error</th></tr>
+                 		<tr><td>No messages.</td></tr>
+               		</table>
+               		<%
+                   }
+
+              } else {
+                 	%>
+                  	<table border="1" bgcolor="#FF0000" >
+             		<tr><th>Error</th></tr>
+             		<tr><td><%=method.getResponseBodyAsString()%></td></tr>
+           		</table>
+           		<%
+               }
            method.releaseConnection();
        }
-   %>  
-<br><br><html><body><%=print%></body></html>
+   %>

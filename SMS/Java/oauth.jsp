@@ -7,14 +7,22 @@ String clientId = request.getParameter("clientId");
 if(clientId==null)
 	clientId = (String) session.getAttribute("clientId");
 if(clientId==null)
-	clientId = "bb823da54e6f70f4387b39b285dcaa9d";
+	clientId = "dd0df9f33ceb63a8196bced77083ce38";
 String clientSecret = request.getParameter("clientSecret");
 if(clientSecret==null)
 	clientSecret = (String) session.getAttribute("clientSecret");
 if(clientSecret==null)
-	clientSecret = "0790582c85fcb860";
+	clientSecret = "d0786d4c98231d3c";
 String redirectUri = request.getParameter("redirectUri");
+if(redirectUri==null)
+	redirectUri = (String) session.getAttribute("redirectUri");
+if(redirectUri==null)
+	redirectUri = "http://apigee.dyndns.org:8080/apigee-public/oauth.jsp";
 String scope = request.getParameter("scope");
+if(scope==null)
+	scope = (String) session.getAttribute("scope");
+if(scope==null)
+	scope = "SMS,MMS,WAP,DC,TL,PAYMENT";
 String code = request.getParameter("code");
 if(code==null) code="";
 String print = "";
@@ -31,8 +39,8 @@ if (getRefreshToken==null) getRefreshToken="";
 <form name="getExtCode" method="post">
 API Key <input type="text" name="clientId" value="<%=clientId%>" size=40 /><br>
 API Secret <input type="text" name="clientSecret" value="<%=clientSecret%>" size=40 /><br>
-Scope <input type="text" name="scope" value="SMS,MMS,WAP,DC,TL,PAYMENT" size=40 /><br />
-Redirect URI <input type="text" name="redirectUri" value="http://ddprdm.net:8080/apigee-public/oauth.jsp" size=60 /><br />
+Scope <input type="text" name="scope" value="<%=scope%>" size=40 /><br />
+Redirect URI <input type="text" name="redirectUri" value="<%=redirectUri%>" size=60 /><br />
 <input type="submit" name="getExtCode" value="Get Access Token" />
 </form><br><br>
 
@@ -40,11 +48,11 @@ Redirect URI <input type="text" name="redirectUri" value="http://ddprdm.net:8080
    	   if(getExtCode!=null) {
    		   session.setAttribute("clientId", clientId);
    		   session.setAttribute("clientSecret", clientSecret);
-   		   response.sendRedirect("https://beta-api.att.com/oauth/authorize?client_id=" + clientId + "&scope=" + scope + "&redirect_uri=" + redirectUri);
+   		   response.sendRedirect("https://test-api.att.com/oauth/authorize?client_id=" + clientId + "&scope=" + scope + "&redirect_uri=" + redirectUri);
    	   }
    
        if(!code.equalsIgnoreCase("")) {
-           String url ="https://beta-api.att.com/oauth/access_token";   
+           String url ="https://test-api.att.com/oauth/access_token";   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);   
            method.setQueryString("grant_type=authorization_code&client_id=" + clientId + "&client_secret=" + clientSecret + "&code=" + code);
@@ -76,7 +84,7 @@ Refresh Token <input type="text" name="refreshToken" value="<%=refreshToken%>" s
 
    <%   
        if(!getRefreshToken.equalsIgnoreCase("")) {
-           String url ="https://beta-api.att.com/oauth/access_token";   
+           String url ="https://test-api.att.com/oauth/access_token";   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);   
            method.setQueryString("grant_type=refresh_token&client_id=" + clientId + "&client_secret=" + clientSecret + "&refresh_token=" + refreshToken);
