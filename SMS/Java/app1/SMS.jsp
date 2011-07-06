@@ -41,7 +41,7 @@ document.write(myDate.format('l, F d, Y  H:i') + ' PDT');
 	if(accessToken==null || accessToken=="null") {
 		accessToken = "";
 		session.setAttribute("postOauth", "SMS.jsp");
-		session.setAttribute("redirectUri", "http://apigee.dyndns.org:8080/apigee-public/oauth.jsp");
+		session.setAttribute("redirectUri", "http://localhost:8080/apigee-public/oauth.jsp");
 		response.sendRedirect("oauth.jsp?getExtCode=yes");
 	}
 	String address = request.getParameter("address");
@@ -85,7 +85,7 @@ Feature 1 - sending SMS message.<BR>
 if(sendSms!=null) {
 	address = "tel:" + address.substring(0,3) + address.substring(4,7) + address.substring(8,12);
 	System.out.println("address is: " + address);
-    String url ="https://test-api.att.com/1/messages/outbox/sms";   
+    String url ="https://api.att.com/1/messages/outbox/sms";   
     HttpClient client = new HttpClient();
     PostMethod method = new PostMethod(url);
     JSONObject rpcObject = new JSONObject();
@@ -129,7 +129,7 @@ Feature 2 - obtaining status on previously sent message.
 
    <%  
        if(getSmsDeliveryStatus!=null) {
-           String url ="https://test-api.att.com/1/messages/outbox/sms/" + smsId;   
+           String url ="https://api.att.com/1/messages/outbox/sms/" + smsId;   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);  
            method.setQueryString("access_token=" + accessToken + "&id=" + smsId);
@@ -174,7 +174,7 @@ Feature 3 - checking number messages sent to a short code.
   
    <%  
        if(getReceivedSms!=null) {
-           String url ="https://test-api.att.com/1/messages/inbox/sms";   
+           String url ="https://api.att.com/1/messages/inbox/sms";   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);  
            method.setQueryString("access_token=" + accessToken + "&registrationID=" + registrationID);

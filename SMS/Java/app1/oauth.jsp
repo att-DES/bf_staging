@@ -7,17 +7,17 @@ String clientId = request.getParameter("clientId");
 if(clientId==null)
 	clientId = (String) session.getAttribute("clientId");
 if(clientId==null)
-	clientId = "dd0df9f33ceb63a8196bced77083ce38";
+	clientId = "d6e3ceaa0890306b89523bb9c0c15c06";
 String clientSecret = request.getParameter("clientSecret");
 if(clientSecret==null)
 	clientSecret = (String) session.getAttribute("clientSecret");
 if(clientSecret==null)
-	clientSecret = "d0786d4c98231d3c";
+	clientSecret = "6a16d7a126778b3d";
 String redirectUri = request.getParameter("redirectUri");
 if(redirectUri==null)
 	redirectUri = (String) session.getAttribute("redirectUri");
 if(redirectUri==null)
-	redirectUri = "http://apigee.dyndns.org:8080/apigee-public/oauth.jsp";
+	redirectUri = "http://localhost:8080/apigee-public/oauth.jsp";
 String scope = request.getParameter("scope");
 if(scope==null)
 	scope = (String) session.getAttribute("scope");
@@ -48,11 +48,11 @@ Redirect URI <input type="text" name="redirectUri" value="<%=redirectUri%>" size
    	   if(getExtCode!=null) {
    		   session.setAttribute("clientId", clientId);
    		   session.setAttribute("clientSecret", clientSecret);
-   		   response.sendRedirect("https://test-api.att.com/oauth/authorize?client_id=" + clientId + "&scope=" + scope + "&redirect_uri=" + redirectUri);
+   		   response.sendRedirect("https://api.att.com/oauth/authorize?client_id=" + clientId + "&scope=" + scope + "&redirect_uri=" + redirectUri);
    	   }
    
        if(!code.equalsIgnoreCase("")) {
-           String url ="https://test-api.att.com/oauth/access_token";   
+           String url ="https://api.att.com/oauth/access_token";   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);   
            method.setQueryString("grant_type=authorization_code&client_id=" + clientId + "&client_secret=" + clientSecret + "&code=" + code);
@@ -84,7 +84,7 @@ Refresh Token <input type="text" name="refreshToken" value="<%=refreshToken%>" s
 
    <%   
        if(!getRefreshToken.equalsIgnoreCase("")) {
-           String url ="https://test-api.att.com/oauth/access_token";   
+           String url ="https://api.att.com/oauth/access_token";   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);   
            method.setQueryString("grant_type=refresh_token&client_id=" + clientId + "&client_secret=" + clientSecret + "&refresh_token=" + refreshToken);
