@@ -1,0 +1,1 @@
+The files in this directory contains the current (drop 3) version of the Sencha code which comprises the SDK.
